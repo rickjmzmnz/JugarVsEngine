@@ -46,6 +46,9 @@ class Interfaz(Frame):
         self.et = Label(self,text="Carga un engine para mostrar más opciones")
         self.et.place(x=80,y=430)
 
+    """
+    Busca el engine que será el rival a vencer en la partida
+    """
     def buscaEngine(self):
         ruta = tkFileDialog.askopenfilename()
         self.engine = cargaEngine(ruta)
@@ -58,6 +61,9 @@ class Interfaz(Frame):
         self.botonBlancas = Button(self,text="Engine juega blancas",command=self.juegaBlancas)
         self.botonBlancas.place(x=170,y=510)
 
+    """
+    Inicia la partida el engine
+    """
     def juegaBlancas(self):
         self.botonBlancas.place_forget()
         self.botonNegras.place_forget()
@@ -65,7 +71,11 @@ class Interfaz(Frame):
         mov = juegaEngine(self.tablero,self.engine)
         siguienteJugadaEng(self.tablero,mov)
         self.colocaTab()
-        
+        self.juegaPersona()
+
+    """
+    Inicia la partida el jugador
+    """
     def juegaNegras(self):
         self.botonBlancas.place_forget()
         self.botonNegras.place_forget()
@@ -73,6 +83,9 @@ class Interfaz(Frame):
         self.juegaPersona()
         self.colocaTab()
 
+    """
+    Coloca la caja de texto donde el jugador va a indicar su jugada
+    """
     def juegaPersona(self):
         self.etPer = Label(self,text="Escoge tu jugada")
         self.etPer.place(x=10,y=510)
@@ -81,7 +94,10 @@ class Interfaz(Frame):
         self.entry.place(x=120,y=510)
         self.botonPer = Button(self,text="Mover",command= lambda: self.aplicaJugadaPer(self.entrytext))
         self.botonPer.place(x=280,y=510)
-        
+
+    """
+    Función para aplicar la jugada que el jugador colocó en la caja de texto
+    """
     def aplicaJugadaPer(self,mov):
         mov = mov.get()
         self.etPer.place_forget()
@@ -95,6 +111,9 @@ class Interfaz(Frame):
         self.botonMueveEng = Button(self,text="Te toca engine",command=self.mueveEng)
         self.botonMueveEng.place(x=10,y=510)
 
+    """
+    Función para que el engine realice una jugada
+    """
     def mueveEng(self):
         mov = juegaEngine(self.tablero,self.engine)
         siguienteJugadaEng(self.tablero,mov)
@@ -105,13 +124,16 @@ class Interfaz(Frame):
         jaquemate = verificaJaqueMate(self.tablero)
         tablas = verificaTablas(self.tablero)
         if(jaquemate == True):
-            print "Jaquemate"
+            self.mensajeJaqueMate()
             return 
         if(jaque == True):
-            print "Jaque"
+            self.mensajeJaque()
         if(tablas == True):
-            print "Tablas"
-            
+            self.mensajeTablas()
+
+    """
+    Dibuja el tablero en el canvas con el estado del juego actual
+    """
     def colocaTab(self):
         svg = obtenSvg(self.tablero)
         svgToImage(svg,"tablero")
@@ -119,6 +141,33 @@ class Interfaz(Frame):
         imagenTk = ImageTk.PhotoImage(imagen)
         self.canvas.image = imagenTk
         self.canvas.create_image(imagenTk.width()/2,imagenTk.height()/2,anchor=CENTER,image=imagenTk,tags="tab")
+
+    """
+    Ventana emergente para informar que hay jaque
+    """
+    def mensajeJaque(self):
+        top = Toplevel()
+        top.geometry("%dx%d%+d%+d" % (170, 80, 600, 300))
+        label = Label(top,text="¡JAQUE!, Mueve el rey")
+        label.place(x=20,y=20)
+
+    """
+    Ventana emergente para informar que hay jaquemate
+    """
+    def mensajeJaqueMate(self):
+        top = Toplevel()
+        top.geometry("%dx%d%+d%+d" % (170, 80, 600, 300))
+        label = Label(top,text="¡JAQUEMATE!, Fin del juego")
+        label.place(x=20,y=20)
+
+    """
+    Ventana emergente para informar que hay tablas
+    """
+    def mensajeTablas(self):
+        top = Toplevel()
+        top.geometry("%dx%d%+d%+d" % (170, 80, 600, 300))
+        label = Label(top,text="¡TABLAS!, Es un empate")
+        label.place(x=20,y=20)
         
     """
     Borra el archivo png del tablero generado por el programa
