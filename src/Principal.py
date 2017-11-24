@@ -21,6 +21,7 @@ class Interfaz(Frame):
         self.pack(fill=BOTH,expand=True)
         self.tablero = None
         self.engine = None
+        self.bandera = None
         self.creaCanvas()
         self.creaBotones()
 
@@ -44,15 +45,13 @@ class Interfaz(Frame):
         botonSalir.place(x=170,y=460)
 
         self.et = Label(self,text="Carga un engine para mostrar más opciones")
-        self.et.place(x=80,y=430)
+        self.et.place(x=100,y=430)
 
     """
-    Busca el engine que será el rival a vencer en la partida
+    Coloca los botones para decidir quien empieza la partida
     """
-    def buscaEngine(self):
-        ruta = tkFileDialog.askopenfilename()
-        self.engine = cargaEngine(ruta)
-
+    def colocaBotonesPartida(self):
+        
         self.et.config(text="Elige con cuales piezas jugará el engine")
         
         self.botonNegras = Button(self,text="Engine juega negras",command=self.juegaNegras)
@@ -60,6 +59,20 @@ class Interfaz(Frame):
 
         self.botonBlancas = Button(self,text="Engine juega blancas",command=self.juegaBlancas)
         self.botonBlancas.place(x=170,y=510)
+        
+    """
+    Busca el engine que será el rival a vencer en la partida
+    """
+    def buscaEngine(self):
+        if(self.engine == None):
+            ruta = tkFileDialog.askopenfilename()
+            self.engine = cargaEngine(ruta)
+            self.colocaBotonesPartida()
+        else:
+            ruta = tkFileDialog.askopenfilename()
+            self.engine = cargaEngine(ruta)
+            self.reiniciaPartida()
+            
 
     """
     Inicia la partida el engine
@@ -71,6 +84,7 @@ class Interfaz(Frame):
         mov = juegaEngine(self.tablero,self.engine)
         siguienteJugadaEng(self.tablero,mov)
         self.colocaTab()
+        self.bandera = True
         self.juegaPersona()
 
     """
@@ -103,10 +117,19 @@ class Interfaz(Frame):
         self.etPer.place_forget()
         self.entry.place_forget()
         self.botonPer.place_forget()
-        siguienteJugadaPer(self.tablero,mov)
-        self.colocaTab()
-        self.tocaEng()
+        if(jugadaValida(self.tablero,mov)):
+            siguienteJugadaPer(self.tablero,mov)
+            self.colocaTab()
+            self.tocaEng()
+            self.et.config(text = "La jugada realizada es " + mov)
+            self.bandera = False
+        else:
+            self.mensajeMovInvalido()
+            self.juegaPersona()
 
+    """
+    Botón para indicarle al engine que le toca mover
+    """
     def tocaEng(self):
         self.botonMueveEng = Button(self,text="Te toca engine",command=self.mueveEng)
         self.botonMueveEng.place(x=10,y=510)
@@ -116,15 +139,19 @@ class Interfaz(Frame):
     """
     def mueveEng(self):
         mov = juegaEngine(self.tablero,self.engine)
+        movS = toStringMove(mov)
         siguienteJugadaEng(self.tablero,mov)
+        self.et.config(text = "La jugada realizada es " + movS)
         self.colocaTab()
         self.botonMueveEng.place_forget()
+        self.bandera = True
         self.juegaPersona()
         jaque = verificaJaque(self.tablero)
         jaquemate = verificaJaqueMate(self.tablero)
         tablas = verificaTablas(self.tablero)
         if(jaquemate == True):
             self.mensajeJaqueMate()
+            self.reiniciaPartida()
             return 
         if(jaque == True):
             self.mensajeJaque()
@@ -156,7 +183,7 @@ class Interfaz(Frame):
     """
     def mensajeJaqueMate(self):
         top = Toplevel()
-        top.geometry("%dx%d%+d%+d" % (170, 80, 600, 300))
+        top.geometry("%dx%d%+d%+d" % (180, 80, 600, 300))
         label = Label(top,text="¡JAQUEMATE!, Fin del juego")
         label.place(x=20,y=20)
 
@@ -168,7 +195,33 @@ class Interfaz(Frame):
         top.geometry("%dx%d%+d%+d" % (170, 80, 600, 300))
         label = Label(top,text="¡TABLAS!, Es un empate")
         label.place(x=20,y=20)
-        
+
+    """
+    Ventana emergente para informar que se hizo un movimiento inválido 
+    """
+    def mensajeMovInvalido(self):
+        top = Toplevel()
+        top.geometry("%dx%d%+d%+d" % (170, 80, 600, 300))
+        label = Label(top,text="Movimiento inválido")
+        label.place(x=20,y=20)
+
+    """
+    Reinicia la partida
+    Coloca el tablero con las piezas en su posición inicial
+    Y los botones para decidir quien mueve primero
+    """
+    def reiniciaPartida(self):
+        if(self.bandera == True):
+            self.etPer.place_forget()
+            self.entry.place_forget()
+            self.botonPer.place_forget()
+        else:
+            self.botonMueveEng.place_forget()
+        self.bandera = None
+        self.colocaBotonesPartida()
+        self.tablero = inicializaTablero()
+        self.colocaTab()
+            
     """
     Borra el archivo png del tablero generado por el programa
     Y se sale del programa
@@ -187,7 +240,7 @@ Para poder interactuar con las acciones que se puedan realizar
 """
 if __name__=="__main__":
     root = Tk()
-    root.geometry("420x580")
+    root.geometry("420x560")
     root.title("Jugar contra un Engine")
     root.wm_state("normal")
     app = Interfaz(root)

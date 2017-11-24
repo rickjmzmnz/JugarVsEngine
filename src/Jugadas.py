@@ -33,12 +33,19 @@ def juegaEngine(tablero,engine):
     return mejor
 
 """
+Pasa a string un movimiento uci
+"""
+def toStringMove(mov):
+    mov = mov.uci()
+    return mov
+
+"""
 Dado un tablero y el movimiento del engine
 Coloca en el tablero la jugada realizada por el engine 
 """
 def siguienteJugadaEng(tablero,mov):
     tablero.push(mov)
-
+    
 """
 Dado un tablero y el movimiento del jugador
 Coloca en el tablero la jugada realizada por el jugador 
@@ -47,6 +54,18 @@ def siguienteJugadaPer(tablero,mov):
     move = chess.Move.from_uci(mov)
     tablero.push(move)
 
+"""
+Dado un tablero y una jugada
+Verifica que la jugada que se quiere realizar es válida
+"""
+def jugadaValida(tablero,mov):
+    move = chess.Move.from_uci(mov)
+    lista = tablero.legal_moves
+    if(move in lista):
+        return True
+    else:
+        return False
+    
 """
 Dado un tablero se verifica si hay jaque
 """
@@ -71,7 +90,6 @@ Se obtiene la representacion del tablero en formato svg
 def obtenSvg(tablero):
     svg = chess.svg.board(board=tablero)
     return svg
-
 
 """
 Convierte un archivo SVG a uno PNG
